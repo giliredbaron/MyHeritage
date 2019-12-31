@@ -1,0 +1,3 @@
+replicas: 3
+mh_parallelism: 2
+mh_stuck_state: present

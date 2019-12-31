@@ -1,0 +1,47 @@
+
+
+version: '3'
+
+services:
+  webserver_node:
+   image: mh-web:v1
+   ports:
+#     - 8080
+     - 80
+   environment:
+     - SERVICE_PORTS=80
+   deploy:
+     replicas: 2
+     update_config:
+       parallelism: 2
+       delay: 10s
+     restart_policy:
+       condition: on-failure
+       max_attempts: 3
+       window: 120s
+   networks:
+     - web
+
+  proxy:
+    image: dockercloud/haproxy
+    depends_on:
+      - webserver_node
+    environment:
+#      - BALANCE=roundrobin
+      - BALANCE=leastconn
+      - STATS_AUTH=gili:gili
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 80:80
+      - 8080:8080
+      - 1936:1936
+    networks:
+      - web
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+networks:
+  web:
+    driver: overlay

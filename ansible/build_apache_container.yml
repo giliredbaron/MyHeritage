@@ -1,0 +1,30 @@
+---
+
+# ----------------------------------------------------------------------------
+#  Build_apache_container.yml - this script creates the web server custom image
+#  The image contains one costume page (as instructed)
+#  Ans a status page (so I can prove that the load-balancer is switching the connections between the servers)
+#  The image will have this structure:  name:tag
+#  For this example, I used: mh-web:v1
+#  For every time a new image needed - please change the tag name.
+# ----------------------------------------------------------------------------
+
+
+- name: Build an image by running ansible in a container
+  hosts: all
+
+  tasks:
+
+    - name: Build Apache image
+      docker_image:
+        name: mh-web
+        tag: v1
+        build:
+          path: /Users/gili/Documents/MyHeritage/ansible/Apache_image_files
+#          pull: yes
+          args:
+            listen_port: 80
+        source: build
+#        state: absent
+        state: present
+

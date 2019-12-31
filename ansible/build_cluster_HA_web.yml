@@ -1,0 +1,35 @@
+---
+
+# ----------------------------------------------------------------------------
+#  This script creates and destroys web cluster (1 or many) web servers
+#  And a load balancer
+#
+#  By editing the parameter file (swarm_vars.yml) before running build_cluster_HA_web.yml we can change the cluster state
+#  We can also use external vars for that (Shutdown the cluster):
+#  ansible-playbook build_cluster_HA_web.yml -e mh_stuck_state=absent
+# ----------------------------------------------------------------------------
+
+- name: Deploy stack from base compose file and override the web service
+  hosts: all
+
+  tasks:
+    - name: Bare include (free-form)
+      include_vars:
+        file: swarm_vars.yml
+
+    - name: Build Apache cluster + HA
+      docker_stack:
+#        state: absent
+        state: "{{mh_stuck_state}}"
+        name: MH_web_cluster
+        compose:
+          - /Users/gili/Documents/MyHeritage/ansible/docker-compose.yml
+#          - ./docker-compose.yml
+          - version: '3'
+            services:
+              webserver_node:
+                  deploy:
+                    replicas: "{{ replicas }}"
+                    update_config:
+                      parallelism: "{{ mh_parallelism }}"
+
